@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/lazyhttp/lazyhttp/internal/tui"
 	"os"
 
@@ -20,8 +21,15 @@ to quickly create a Cobra application.`,
 
 	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		location := args[0]
 
-		tui.Main()
+		directory, err := cmd.Flags().GetBool("directory")
+		if err != nil {
+			fmt.Println("Error reading directory flag:", err)
+			return
+		}
+
+		tui.Main(location, directory)
 	},
 }
 
