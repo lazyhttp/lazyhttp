@@ -2,6 +2,7 @@
   <configuration default="false" name="tui" type="GoApplicationRunConfiguration" factoryName="Go Application">
     <module name="lazyhttp" />
     <working_directory value="$PROJECT_DIR$" />
+    <parameters value="-d ." />
     <kind value="PACKAGE" />
     <package value="github.com/lazyhttp/lazyhttp" />
     <directory value="$PROJECT_DIR$" />
