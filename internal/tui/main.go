@@ -3,38 +3,30 @@ package tui
 import (
 	"fmt"
 	"github.com/gdamore/tcell/v2"
+	"github.com/lazyhttp/lazyhttp/internal/requests"
 	"github.com/rivo/tview"
+	"strings"
 )
 
 func Main(location string, isDirectory bool) {
 	app := tview.NewApplication()
 
-	locationText := fmt.Sprintf("This is the specified location: %v", location)
 	textArea := tview.NewTextArea().
 		SetWrap(true).
-		SetPlaceholder(locationText)
+		SetText("GET https://www.google.com", false)
 
 	textArea.
 		SetBorder(true).
 		SetTitle("1: Input Text Here").
 		SetTitleAlign(tview.AlignLeft)
 
-	mirroredTextView := tview.NewTextView().
+	responseTextView := tview.NewTextView().
 		SetWrap(true)
 
-	mirroredTextView.
+	responseTextView.
 		SetBorder(true).
 		SetTitle("2: Mirrored Text Here").
 		SetTitleAlign(tview.AlignLeft)
-
-	helpTextView := tview.NewTextView().SetText("Press F1 for help")
-
-	updateMirror := func() {
-		currentText := textArea.GetText()
-		mirroredTextView.SetText(currentText)
-	}
-	textArea.SetChangedFunc(updateMirror)
-	updateMirror()
 
 	var directoryText = "This is a file"
 	if isDirectory {
@@ -42,16 +34,74 @@ func Main(location string, isDirectory bool) {
 	}
 	directoryTextView := tview.NewTextView().SetText(directoryText)
 
-	pages := tview.NewPages()
+	helpTextView := tview.NewTextView().SetText("Press F1 for help")
 
 	mainView := tview.NewGrid().
 		SetRows(0, 1).
 		//SetColumns(0, 1).
 		AddItem(textArea, 0, 0, 1, 1, 0, 0, true).
-		AddItem(mirroredTextView, 0, 1, 1, 1, 0, 0, false).
+		AddItem(responseTextView, 0, 1, 1, 1, 0, 0, false).
 		AddItem(helpTextView, 1, 0, 1, 1, 0, 0, false).
 		AddItem(directoryTextView, 1, 1, 1, 1, 0, 0, false)
 
+	pages := tview.NewPages()
+	help := makeHelp(pages)
+
+	pages.AddAndSwitchToPage("main", mainView, true).
+		AddPage("help", tview.NewGrid().
+			SetColumns(0, 64, 0).
+			SetRows(0, 22, 0).
+			AddItem(help, 1, 1, 1, 1, 0, 0, true), true, false)
+
+	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyF1:
+			pages.ShowPage("help") //TODO: Check when clicking outside help window with the mouse. Then clicking help again.
+			return nil
+
+		case tcell.KeyCR:
+		case tcell.KeyF5:
+			if event.Key() == tcell.KeyCR && event.Modifiers() != tcell.ModCtrl {
+				return event
+			}
+
+			respose, requestError := fireRequest(textArea.GetText())
+
+			if requestError != nil {
+				responseTextView.SetText(requestError.Error())
+				return nil
+			}
+			responseTextView.SetText(respose)
+
+			return nil
+		}
+
+		return event
+	})
+
+	if err := app.SetRoot(pages, true).EnableMouse(true).EnablePaste(true).Run(); err != nil {
+		panic(err)
+	}
+}
+
+func fireRequest(request string) (response string, err error) {
+	split := strings.Split(request, " ")
+	if len(split) != 2 {
+		return "", fmt.Errorf("not enough arguments, expected 2 got %d", len(split))
+	}
+	requestType := split[0]
+	requestUrl := split[1]
+	if requestType == "GET" {
+		response, err := requests.Get(requestUrl)
+		if err != nil {
+			return "", fmt.Errorf("failed GET request to %v; %w", requestUrl, err)
+		}
+		return response, nil
+	}
+	return "NOT SUPPORTED", nil
+}
+
+func makeHelp(pages *tview.Pages) *tview.Frame {
 	help1 := tview.NewTextView().
 		SetDynamicColors(true).
 		SetText(helpText1)
@@ -66,6 +116,7 @@ func Main(location string, isDirectory bool) {
 
 	help := tview.NewFrame(help1).
 		SetBorders(1, 1, 0, 0, 2, 2)
+
 	help.SetBorder(true).
 		SetTitle("Help").
 		SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -85,27 +136,10 @@ func Main(location string, isDirectory bool) {
 			}
 			return event
 		})
-
-	pages.AddAndSwitchToPage("main", mainView, true).
-		AddPage("help", tview.NewGrid().
-			SetColumns(0, 64, 0).
-			SetRows(0, 22, 0).
-			AddItem(help, 1, 1, 1, 1, 0, 0, true), true, false)
-
-	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		if event.Key() == tcell.KeyF1 {
-			pages.ShowPage("help") //TODO: Check when clicking outside help window with the mouse. Then clicking help again.
-			return nil
-		}
-		return event
-	})
-
-	if err := app.SetRoot(pages, true).EnableMouse(true).EnablePaste(true).Run(); err != nil {
-		panic(err)
-	}
+	return help
 }
 
-var helpText1 string = `[green]Navigation
+var helpText1 = `[green]Navigation
 
 [yellow]Left arrow[white]: Move left.
 [yellow]Right arrow[white]: Move right.
@@ -124,7 +158,7 @@ var helpText1 string = `[green]Navigation
 
 [blue]Press Enter for more help, press Escape to return.`
 
-var helpText2 string = `[green]Editing[white]
+var helpText2 = `[green]Editing[white]
 
 Type to enter text.
 [yellow]Ctrl-H, Backspace[white]: Delete the left character.
@@ -135,7 +169,7 @@ Type to enter text.
 
 [blue]Press Enter for more help, press Escape to return.`
 
-var helpText3 string = `[green]Selecting Text[white]
+var helpText3 = `[green]Selecting Text[white]
 
 Move while holding Shift or drag the mouse.
 Double-click to select a word.
