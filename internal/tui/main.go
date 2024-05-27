@@ -5,20 +5,29 @@ import (
 	"github.com/gdamore/tcell/v2"
 	"github.com/lazyhttp/lazyhttp/internal/requests"
 	"github.com/rivo/tview"
-	"strings"
 )
 
-func Main(location string, isDirectory bool) {
+func MainPage(location string, isDirectory bool) {
 	app := tview.NewApplication()
 
-	textArea := tview.NewTextArea().
-		SetWrap(true).
-		SetText("GET https://www.google.com", false)
+	methodSelect := tview.NewDropDown().
+		SetOptions([]string{"GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE", "PATCH"}, nil).
+		SetCurrentOption(0)
+	methodSelect.
+		SetBorder(true).
+		SetTitle("Method")
 
-	textArea.
+	urlText := tview.NewTextArea().
+		SetWrap(true).
+		SetText("https://www.google.com", false)
+
+	urlText.
 		SetBorder(true).
 		SetTitle("1: Input Text Here").
 		SetTitleAlign(tview.AlignLeft)
+
+	bodyTextArea := tview.NewTextArea().
+		SetWrap(true).SetText("SomeBody", false)
 
 	responseTextView := tview.NewTextView().
 		SetWrap(true)
@@ -28,21 +37,16 @@ func Main(location string, isDirectory bool) {
 		SetTitle("2: Mirrored Text Here").
 		SetTitleAlign(tview.AlignLeft)
 
-	var directoryText = "This is a file"
-	if isDirectory {
-		directoryText = "This is a directory"
-	}
-	directoryTextView := tview.NewTextView().SetText(directoryText)
-
 	helpTextView := tview.NewTextView().SetText("Press F1 for help")
 
 	mainView := tview.NewGrid().
-		SetRows(0, 1).
-		//SetColumns(0, 1).
-		AddItem(textArea, 0, 0, 1, 1, 0, 0, true).
-		AddItem(responseTextView, 0, 1, 1, 1, 0, 0, false).
-		AddItem(helpTextView, 1, 0, 1, 1, 0, 0, false).
-		AddItem(directoryTextView, 1, 1, 1, 1, 0, 0, false)
+		SetRows(2, 0, 1).
+		//SetColumns(0, 1, 1).
+		AddItem(methodSelect, 0, 0, 1, 1, 0, 0, false).
+		AddItem(urlText, 0, 1, 1, 1, 0, 0, true).
+		AddItem(bodyTextArea, 1, 0, 1, 1, 0, 0, true).
+		AddItem(responseTextView, 1, 1, 1, 1, 0, 0, false).
+		AddItem(helpTextView, 2, 1, 1, 2, 0, 0, false)
 
 	pages := tview.NewPages()
 	help := makeHelp(pages)
@@ -65,7 +69,8 @@ func Main(location string, isDirectory bool) {
 				return event
 			}
 
-			respose, requestError := fireRequest(textArea.GetText())
+			_, method := methodSelect.GetCurrentOption()
+			respose, requestError := fireRequest(method, urlText.GetText())
 
 			if requestError != nil {
 				responseTextView.SetText(requestError.Error())
@@ -84,13 +89,10 @@ func Main(location string, isDirectory bool) {
 	}
 }
 
-func fireRequest(request string) (response string, err error) {
-	split := strings.Split(request, " ")
-	if len(split) != 2 {
-		return "", fmt.Errorf("not enough arguments, expected 2 got %d", len(split))
-	}
-	requestType := split[0]
-	requestUrl := split[1]
+func fireRequest(method, url string) (response string, err error) {
+
+	requestType := method
+	requestUrl := url
 	if requestType == "GET" {
 		response, err := requests.Get(requestUrl)
 		if err != nil {

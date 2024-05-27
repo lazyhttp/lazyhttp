@@ -29,7 +29,7 @@ to quickly create a Cobra application.`,
 			return
 		}
 
-		tui.Main(location, directory)
+		tui.MainPage(location, directory)
 	},
 }
 
