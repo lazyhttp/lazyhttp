@@ -31,44 +31,37 @@ type Model struct {
 	Height, Width int
 
 	// Views
-	ProgramInfo string //textarea.Model
-	Requests    string //textarea.Model
-	History     string //textarea.Model
-	HttpMethod  string //textarea.Model
-	Url         string //textarea.Model
-	Headers     string //textarea.Model
-	Body        string //textarea.Model
-	Response    string //textarea.Model
-	Statistics  string //textarea.Model
+	ProgramInfo relativeSizedView
+	Requests    relativeSizedView
+	History     relativeSizedView
+	HttpMethod  relativeSizedView
+	Url         relativeSizedView
+	Headers     relativeSizedView
+	Body        relativeSizedView
+	Response    relativeSizedView
+	Statistics  relativeSizedView
 }
 
 func (m Model) Init() tea.Cmd {
-	return func() tea.Msg {
-		return tea.WindowSizeMsg{
-			Width:  80,
-			Height: 24,
-		}
-	}
+	return nil
 }
 
 func (m Model) View() string {
 
-	heightUnit := m.Height / 10
-	widthUnit := m.Width / 10
 	leftPanel := lipgloss.JoinVertical(lipgloss.Top,
-		getSizedStyle(2, 3*widthUnit).Render(m.ProgramInfo),
-		getSizedStyle(3*heightUnit, 3*widthUnit).Render(m.Requests),
-		getSizedStyle(3*heightUnit, 3*widthUnit).Render(m.History))
+		m.ProgramInfo.View(),
+		m.Requests.View(),
+		m.History.View())
 
-	urlPanel := lipgloss.JoinHorizontal(lipgloss.Top, getSizedStyle(2, 1*widthUnit).Render(m.HttpMethod), getSizedStyle(2, 4*widthUnit).Render(m.Url))
+	urlPanel := lipgloss.JoinHorizontal(lipgloss.Top, m.HttpMethod.View(), m.Url.View())
 	requestPanel := lipgloss.JoinVertical(lipgloss.Top,
 		urlPanel,
-		getSizedStyle(3*heightUnit, 6*widthUnit).Render(m.Headers),
-		getSizedStyle(3*heightUnit, 6*widthUnit).Render(m.Body))
+		m.Headers.View(),
+		m.Body.View())
 
 	responsePanel := lipgloss.JoinVertical(lipgloss.Top,
-		getSizedStyle(5*heightUnit, 4*heightUnit).Render(m.Response),
-		getSizedStyle(5*heightUnit, 4*heightUnit).Render(m.Statistics))
+		m.Response.View(),
+		m.Statistics.View())
 
 	return lipgloss.JoinHorizontal(lipgloss.Top,
 		leftPanel, requestPanel, responsePanel)
@@ -82,8 +75,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 	case tea.WindowSizeMsg:
-		m.Width = msg.(tea.WindowSizeMsg).Width
-		m.Height = msg.(tea.WindowSizeMsg).Height
+		m.ProgramInfo.Update(msg)
+		m.Requests.Update(msg)
+		m.History.Update(msg)
+		m.HttpMethod.Update(msg)
+		m.Url.Update(msg)
+		m.Headers.Update(msg)
+		m.Body.Update(msg)
+		m.Response.Update(msg)
+		m.Statistics.Update(msg)
 		return m, nil
 	}
 	return m, nil

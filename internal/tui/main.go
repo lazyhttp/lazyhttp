@@ -19,15 +19,15 @@ func initialModel() Model {
 	model := Model{
 		IsDirectory: false,
 		Location:    ".",
-		ProgramInfo: "info",
-		Requests:    "collection",
-		History:     "recent",
-		HttpMethod:  "method",
-		Url:         "url",
-		Headers:     "header",
-		Body:        "body",
-		Response:    "response",
-		Statistics:  "stats"}
+		ProgramInfo: relativeSizedView{1.0 / 6.0, 1.0 / 4.0, 1, 1, "info"},
+		Requests:    relativeSizedView{3.0 / 6.0, 1.0 / 4, 1, 1, "collection"},
+		History:     relativeSizedView{3.0 / 6.0, 1.0 / 4, 1, 1, "recent"},
+		HttpMethod:  relativeSizedView{1.0 / 6, 1.0 / 4, 1, 1, "method"},
+		Url:         relativeSizedView{1.0 / 6, 1.0 / 4, 1, 1, "url"},
+		Headers:     relativeSizedView{3.0 / 6, 2.0 / 4, 1, 1, "header"},
+		Body:        relativeSizedView{3.0 / 6, 2.0 / 4, 1, 1, "body"},
+		Response:    relativeSizedView{4.0 / 6, 1.0 / 4, 1, 1, "response"},
+		Statistics:  relativeSizedView{3.0 / 6, 1.0 / 4, 1, 1, "stats"}}
 	return model
 }
 
