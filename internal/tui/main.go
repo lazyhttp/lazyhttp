@@ -10,19 +10,19 @@ import (
 func MainPage(location string, isDirectory bool) {
 	app := tview.NewApplication()
 
-	infoBox := tview.NewTextView()
+	infoBox := tview.NewTextView().SetText("info")
 	infoBox.
 		SetBorder(true).
 		SetTitle("info").
 		SetTitleAlign(tview.AlignLeft)
 
-	requestDirectory := tview.NewTextView()
+	requestDirectory := tview.NewTextView().SetText("requests")
 	requestDirectory.
 		SetBorder(true).
 		SetTitle("requests").
 		SetTitleAlign(tview.AlignLeft)
 
-	recents := tview.NewTextView()
+	recents := tview.NewTextView().SetText("recents")
 	recents.
 		SetBorder(true).
 		SetTitle("recents").
@@ -58,6 +58,8 @@ func MainPage(location string, isDirectory bool) {
 	bodyTextArea := tview.NewTextArea().
 		SetWrap(true).SetText("SomeBody", false)
 
+	bodyTextArea.SetBorder(true)
+
 	responseTextView := tview.NewTextView().
 		SetWrap(true)
 
@@ -69,8 +71,8 @@ func MainPage(location string, isDirectory bool) {
 	helpTextView := tview.NewTextView().SetText("Press F1 for help")
 
 	mainView := tview.NewGrid().
-		SetRows(2, 0, 0, 1).
-		SetColumns(1, 2, 0, 0).
+		SetRows(-1, -4, -4, -1).
+		SetColumns(-3, -1, -4, -5).
 		//left side
 		AddItem(infoBox, 0, 0, 1, 1, 0, 0, true).
 		AddItem(requestDirectory, 1, 0, 1, 1, 0, 0, false).
