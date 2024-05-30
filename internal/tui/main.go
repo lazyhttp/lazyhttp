@@ -19,15 +19,15 @@ func initialModel() Model {
 	model := Model{
 		IsDirectory: false,
 		Location:    ".",
-		ProgramInfo: relativeSizedView{1.0 / 6.0, 1.0 / 4.0, 1, 1, "info"},
-		Requests:    relativeSizedView{2.0 / 6.0, 1.0 / 4.0, 1, 1, "collection"},
-		History:     relativeSizedView{2.0 / 6.0, 1.0 / 4.0, 1, 1, "recent"},
-		HttpMethod:  relativeSizedView{1.0 / 6.0, 1.0 / 4.0, 1, 1, "method"},
-		Url:         relativeSizedView{1.0 / 6.0, 1.0 / 4.0, 1, 1, "url"},
-		Headers:     relativeSizedView{1.0 / 6.0, 2.0 / 4.0, 1, 1, "header"},
-		Body:        relativeSizedView{1.0 / 6.0, 2.0 / 4.0, 1, 1, "body"},
-		Response:    relativeSizedView{3.0 / 6.0, 1.0 / 4.0, 1, 1, "response"},
-		Statistics:  relativeSizedView{2.0 / 6.0, 1.0 / 4.0, 1, 1, "stats"}}
+		ProgramInfo: relativeSizedView{1.0 / 10.0, 3.0 / 10.0, 1, 1, "info"},
+		Requests:    relativeSizedView{3.0 / 10.0, 3.0 / 10.0, 1, 1, "collection"},
+		History:     relativeSizedView{3.0 / 10.0, 3.0 / 10.0, 1, 1, "recent"},
+		HttpMethod:  relativeSizedView{1.0 / 10.0, 1.0 / 10.0, 1, 1, "method"},
+		Url:         relativeSizedView{1.0 / 10.0, 2.0 / 10.0, 1, 1, "url"},
+		Headers:     relativeSizedView{3.0 / 10.0, 3.0 / 10.0, 1, 1, "header"},
+		Body:        relativeSizedView{3.0 / 10.0, 3.0 / 10.0, 1, 1, "body"},
+		Response:    relativeSizedView{5.0 / 10.0, 3.0 / 10.0, 1, 1, "response"},
+		Statistics:  relativeSizedView{3.0 / 10.0, 3.0 / 10.0, 1, 1, "stats"}}
 	return model
 }
 
