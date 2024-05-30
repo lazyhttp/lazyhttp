@@ -10,20 +10,49 @@ import (
 func MainPage(location string, isDirectory bool) {
 	app := tview.NewApplication()
 
+	infoBox := tview.NewTextView()
+	infoBox.
+		SetBorder(true).
+		SetTitle("info").
+		SetTitleAlign(tview.AlignLeft)
+
+	requestDirectory := tview.NewTextView()
+	requestDirectory.
+		SetBorder(true).
+		SetTitle("requests").
+		SetTitleAlign(tview.AlignLeft)
+
+	recents := tview.NewTextView()
+	recents.
+		SetBorder(true).
+		SetTitle("recents").
+		SetTitleAlign(tview.AlignLeft)
+
 	methodSelect := tview.NewDropDown().
 		SetOptions([]string{"GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE", "PATCH"}, nil).
 		SetCurrentOption(0)
+
 	methodSelect.
 		SetBorder(true).
-		SetTitle("Method")
+		SetTitle("Method").
+		SetTitleAlign(tview.AlignLeft)
 
-	urlText := tview.NewTextArea().
+	urlTextArea := tview.NewTextArea().
 		SetWrap(true).
 		SetText("https://www.google.com", false)
 
-	urlText.
+	urlTextArea.
 		SetBorder(true).
 		SetTitle("1: Input Text Here").
+		SetTitleAlign(tview.AlignLeft)
+
+	headersTextArea := tview.NewTextArea().
+		SetWrap(true).
+		SetText("headers", false)
+
+	headersTextArea.
+		SetBorder(true).
+		SetTitle("headers").
 		SetTitleAlign(tview.AlignLeft)
 
 	bodyTextArea := tview.NewTextArea().
@@ -40,13 +69,21 @@ func MainPage(location string, isDirectory bool) {
 	helpTextView := tview.NewTextView().SetText("Press F1 for help")
 
 	mainView := tview.NewGrid().
-		SetRows(2, 0, 1).
-		//SetColumns(0, 1, 1).
-		AddItem(methodSelect, 0, 0, 1, 1, 0, 0, false).
-		AddItem(urlText, 0, 1, 1, 1, 0, 0, true).
-		AddItem(bodyTextArea, 1, 0, 1, 1, 0, 0, true).
-		AddItem(responseTextView, 1, 1, 1, 1, 0, 0, false).
-		AddItem(helpTextView, 2, 1, 1, 2, 0, 0, false)
+		SetRows(2, 0, 0, 1).
+		SetColumns(1, 2, 0, 0).
+		//left side
+		AddItem(infoBox, 0, 0, 1, 1, 0, 0, true).
+		AddItem(requestDirectory, 1, 0, 1, 1, 0, 0, false).
+		AddItem(recents, 2, 0, 1, 1, 0, 0, false).
+		// middle
+		AddItem(methodSelect, 0, 1, 1, 1, 0, 0, false).
+		AddItem(urlTextArea, 0, 2, 1, 1, 0, 0, false).
+		AddItem(headersTextArea, 1, 1, 1, 2, 0, 0, false).
+		AddItem(bodyTextArea, 2, 1, 1, 2, 0, 0, false).
+		//right
+		AddItem(responseTextView, 0, 3, 3, 1, 0, 0, false).
+		//help
+		AddItem(helpTextView, 3, 1, 1, 3, 0, 0, false)
 
 	pages := tview.NewPages()
 	help := makeHelp(pages)
@@ -70,7 +107,7 @@ func MainPage(location string, isDirectory bool) {
 			}
 
 			_, method := methodSelect.GetCurrentOption()
-			respose, requestError := fireRequest(method, urlText.GetText())
+			respose, requestError := fireRequest(method, urlTextArea.GetText())
 
 			if requestError != nil {
 				responseTextView.SetText(requestError.Error())
