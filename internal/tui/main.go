@@ -2,25 +2,36 @@ package tui
 
 import (
 	"fmt"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/lazyhttp/lazyhttp/internal/requests"
+	"github.com/lazyhttp/lazyhttp/internal/tui/components"
 	"github.com/rivo/tview"
 )
 
 func MainPage(location string, isDirectory bool) {
 	app := tview.NewApplication()
 
-	infoBox := tview.NewTextView().SetText("info")
+	infoBox := tview.NewTextArea()
 	infoBox.
+		SetPlaceholder(location).
+		SetPlaceholderStyle(tcell.StyleDefault).
 		SetBorder(true).
 		SetTitle("info").
 		SetTitleAlign(tview.AlignLeft)
 
-	requestDirectory := tview.NewTextView().SetText("requests")
-	requestDirectory.
-		SetBorder(true).
-		SetTitle("requests").
-		SetTitleAlign(tview.AlignLeft)
+	requestDirectory := components.NewTabbedPanels()
+	requestDirectory.AddTab("Tab 1", "label 1", tview.NewTextView().SetText("t1"))
+	requestDirectory.AddTab("Tab 2", "label 2", tview.NewTextView().SetText("t2"))
+	requestDirectory.AddTab("Tab 3", "label 3", tview.NewTextView().SetText("t3"))
+	requestDirectory.RemoveTab("Tab 1")
+	requestDirectory.SetBorder(true)
+
+	// requestDirectory := tview.NewTextView().SetText("requests")
+	// requestDirectory.
+	// SetBorder(true).
+	// SetTitle("tab1 - tab2").
+	// SetTitleAlign(tview.AlignLeft)
 
 	recents := tview.NewTextView().SetText("recents")
 	recents.
@@ -46,11 +57,12 @@ func MainPage(location string, isDirectory bool) {
 		SetTitle("1: Input Text Here").
 		SetTitleAlign(tview.AlignLeft)
 
-	headersTextArea := tview.NewTextArea().
-		SetWrap(true).
-		SetText("headers", false)
+	headersTableView := components.NewHeaderTable()
+	headersTableView.AddRow(components.NewHeaderLine("t1", "v1", true, ""))
+	headersTableView.AddRow(components.NewHeaderLine("t2", "v2", true, ""))
+	headersTableView.AddRow(components.NewHeaderLine("t3", "v3", true, ""))
 
-	headersTextArea.
+	headersTableView.
 		SetBorder(true).
 		SetTitle("headers").
 		SetTitleAlign(tview.AlignLeft)
@@ -70,22 +82,28 @@ func MainPage(location string, isDirectory bool) {
 
 	helpTextView := tview.NewTextView().SetText("Press F1 for help")
 
-	mainView := tview.NewGrid().
-		SetRows(-1, -4, -4, -1).
-		SetColumns(-3, -1, -4, -5).
-		//left side
-		AddItem(infoBox, 0, 0, 1, 1, 0, 0, true).
-		AddItem(requestDirectory, 1, 0, 1, 1, 0, 0, false).
-		AddItem(recents, 2, 0, 1, 1, 0, 0, false).
-		// middle
-		AddItem(methodSelect, 0, 1, 1, 1, 0, 0, false).
-		AddItem(urlTextArea, 0, 2, 1, 1, 0, 0, false).
-		AddItem(headersTextArea, 1, 1, 1, 2, 0, 0, false).
-		AddItem(bodyTextArea, 2, 1, 1, 2, 0, 0, false).
-		//right
-		AddItem(responseTextView, 0, 3, 3, 1, 0, 0, false).
-		//help
-		AddItem(helpTextView, 3, 1, 1, 3, 0, 0, false)
+	infoBoxHeight := 4
+	mainView := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(tview.NewFlex().
+			// left side
+			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+				AddItem(infoBox, infoBoxHeight, 1, true).
+				AddItem(requestDirectory, 0, 3, false).
+				AddItem(recents, 0, 3, false),
+				0, 1, false).
+			// middle
+			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+				AddItem(tview.NewFlex().
+					AddItem(methodSelect, 10, 0, false).
+					AddItem(urlTextArea, 0, 1, false),
+					infoBoxHeight, 0, false).
+				AddItem(headersTableView, 0, 1, false).
+				AddItem(bodyTextArea, 0, 1, false),
+				0, 2, false).
+			// right
+			AddItem(responseTextView, 0, 2, false), 0, 1, false).
+		// help
+		AddItem(helpTextView, 1, 0, false)
 
 	pages := tview.NewPages()
 	help := makeHelp(pages)
@@ -99,7 +117,7 @@ func MainPage(location string, isDirectory bool) {
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyF1:
-			pages.ShowPage("help") //TODO: Check when clicking outside help window with the mouse. Then clicking help again.
+			pages.ShowPage("help") // TODO: Check when clicking outside help window with the mouse. Then clicking help again.
 			return nil
 
 		case tcell.KeyCR:
@@ -129,7 +147,6 @@ func MainPage(location string, isDirectory bool) {
 }
 
 func fireRequest(method, url string) (response string, err error) {
-
 	requestType := method
 	requestUrl := url
 	if requestType == "GET" {
