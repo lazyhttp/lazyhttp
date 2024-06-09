@@ -66,23 +66,18 @@ func (h *headerTableData) Clear() {
 	*h = make(headerTableData, 0)
 }
 
-type HeaderTable struct {
-	tview.Table
+type HeaderList struct {
+	tview.List
 	tableData *headerTableData
 }
 
-func NewHeaderTable() *HeaderTable {
+func NewHeaderTable() *HeaderList {
 	td := make(headerTableData, 0)
-	t := tview.NewTable()
-	table := HeaderTable{
-		Table:     *t,
+	t := tview.NewList()
+	table := HeaderList{
+		List:      *t,
 		tableData: &td,
 	}
 
 	return &table
-}
-
-func (h *HeaderTable) AddRow(line *HeaderLine) {
-	*h.tableData = append(*h.tableData, line)
-	(*h).SetContent((*h).tableData)
 }

@@ -58,7 +58,7 @@ func MainPage(location string, isDirectory bool) {
 		SetTitleAlign(tview.AlignLeft)
 
 	headersTableView := components.NewHeaderTable()
-	headersTableView.AddRow(components.NewHeaderLine("t1", "v1", true, ""))
+	headersTableView.AddItem(components.NewHeaderLine("t1", "v1", true, ""))
 	headersTableView.AddRow(components.NewHeaderLine("t2", "v2", true, ""))
 	headersTableView.AddRow(components.NewHeaderLine("t3", "v3", true, ""))
 
