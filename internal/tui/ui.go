@@ -58,7 +58,8 @@ func MainPage(location string, isDirectory bool) {
 		SetTitleAlign(tview.AlignLeft)
 
 	headersTableView := components.NewHeaderTable()
-	headersTableView.AddItem(components.NewHeaderLine("t1", "v1", true, ""))
+	l1 := components.NewHeaderLine("t1", "v1", true, "")
+	headersTableView.AddRow(l1)
 	headersTableView.AddRow(components.NewHeaderLine("t2", "v2", true, ""))
 	headersTableView.AddRow(components.NewHeaderLine("t3", "v3", true, ""))
 
@@ -95,9 +96,9 @@ func MainPage(location string, isDirectory bool) {
 			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
 				AddItem(tview.NewFlex().
 					AddItem(methodSelect, 10, 0, false).
-					AddItem(urlTextArea, 0, 1, false),
+					AddItem(urlTextArea, 0, 1, true),
 					infoBoxHeight, 0, false).
-				AddItem(headersTableView, 0, 1, false).
+				AddItem(headersTableView, 0, 1, true).
 				AddItem(bodyTextArea, 0, 1, false),
 				0, 2, false).
 			// right

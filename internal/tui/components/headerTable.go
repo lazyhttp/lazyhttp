@@ -1,8 +1,7 @@
 package components
 
 import (
-	"slices"
-
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
@@ -18,66 +17,90 @@ func NewHeaderLine(key string, value string, enabled bool, style string) *Header
 	}
 }
 
+func (h *HeaderLine) GetCells() [3]*tview.TableCell {
+	cells := [3]*tview.TableCell{}
+	key := tview.NewTableCell(h.key)
+	key.SetAlign(tview.AlignLeft)
+
+	cells[0] = key
+
+	value := tview.NewTableCell(h.value)
+	value.SetAlign(tview.AlignRight)
+	value.SetExpansion(1)
+	cells[1] = value
+
+	checkBox := tview.NewTableCell(h.getCheckbox())
+	checkBox.SetClickedFunc(func() bool {
+		if h.enabled {
+			h.enabled = false
+		} else {
+			h.enabled = true
+		}
+
+		checkBox.SetText(h.getCheckbox())
+		return false
+	})
+	cells[2] = checkBox
+
+	return cells
+}
+
+func (h HeaderLine) getCheckbox() string {
+	checkBox := "\u2610  "
+	if h.enabled {
+		checkBox = "\u2611  "
+	}
+
+	return checkBox
+}
+
 type headerTableData []*HeaderLine
 
-func (h *headerTableData) GetCell(row, column int) *tview.TableCell {
-	line := (*h)[row]
-	switch column {
-	case 0:
-		return tview.NewTableCell(line.key)
-	case 1:
-		return tview.NewTableCell(line.value)
-	case 2:
-		enabledString := "\u2610"
-		if line.enabled {
-			enabledString = "\u2611"
-		}
-		return tview.NewTableCell(enabledString)
-	}
-	return tview.NewTableCell("")
-}
-
-func (h *headerTableData) GetRowCount() int {
-	return len(*h)
-}
-
-func (h *headerTableData) GetColumnCount() int {
-	return 3
-}
-
-func (h *headerTableData) SetCell(row, column int, cell *tview.TableCell) {
-}
-
-func (h *headerTableData) RemoveRow(row int) {
-	*h = slices.Delete(*h, row, row)
-}
-
-func (h *headerTableData) RemoveColumn(column int) {
-}
-
-func (h *headerTableData) InsertRow(row int) {
-	*h = append(*h, &HeaderLine{})
-}
-
-func (h *headerTableData) InsertColumn(column int) {
-}
-
-func (h *headerTableData) Clear() {
-	*h = make(headerTableData, 0)
-}
-
-type HeaderList struct {
-	tview.List
+type HeaderTable struct {
+	tview.Table
 	tableData *headerTableData
+	hasFocus  bool
 }
 
-func NewHeaderTable() *HeaderList {
+func NewHeaderTable() *HeaderTable {
 	td := make(headerTableData, 0)
-	t := tview.NewList()
-	table := HeaderList{
-		List:      *t,
+	t := tview.NewTable()
+	//Input capture for t focus management
+	table := HeaderTable{
+		Table:     *t,
 		tableData: &td,
 	}
 
+	table.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyUp, tcell.KeyDown, tcell.KeyRight, tcell.KeyLeft:
+			table.SetSelectable(true, false)
+		case tcell.KeyEscape:
+			table.SetSelectable(false, false)
+		}
+		return event
+	})
+
 	return &table
+}
+
+func (h *HeaderTable) AddRow(line *HeaderLine) {
+	*h.tableData = append(*h.tableData, line)
+	cells := line.GetCells()
+	row := h.GetRowCount()
+	for col, cell := range cells {
+		h.SetCell(row+1, col, cell)
+	}
+}
+
+func (ht *HeaderTable) Focus(delegate func(p tview.Primitive)) {
+	ht.hasFocus = true
+	ht.Table.SetSelectable(true, false)
+	ht.Table.Focus(delegate)
+}
+
+func (ht *HeaderTable) Blur() {
+	ht.hasFocus = false
+	ht.Table.SetSelectable(false, false)
+	ht.Table.Blur()
 }
