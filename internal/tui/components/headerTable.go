@@ -1,8 +1,9 @@
 package components
 
 import (
-	"github.com/rivo/tview"
 	"slices"
+
+	"github.com/rivo/tview"
 )
 
 type HeaderLine struct {
@@ -27,7 +28,7 @@ func (h *headerTableData) GetCell(row, column int) *tview.TableCell {
 	case 1:
 		return tview.NewTableCell(line.value)
 	case 2:
-		var enabledString = "\u2610"
+		enabledString := "\u2610"
 		if line.enabled {
 			enabledString = "\u2611"
 		}
