@@ -41,7 +41,7 @@ type Model struct {
 	Height, Width int
 
 	// Views
-	ProgramInfo textarea.Model
+	ProgramInfo Box
 	Url         textarea.Model
 	Response    textarea.Model
 	Help        help.Model
@@ -59,7 +59,7 @@ func initialModel() *Model {
 		IsDirectory: false,
 		Location:    ".",
 		Response:    newTextarea(),
-		ProgramInfo: newTextarea(),
+		ProgramInfo: NewBox(),
 		Url:         newTextarea(),
 		Requests:    newTextarea(),
 		Headers:     newTextarea(),
@@ -68,6 +68,10 @@ func initialModel() *Model {
 	}
 	model.Url.Focus()
 	return &model
+}
+
+func newBox() Box {
+	return NewBox()
 }
 
 func newTextarea() textarea.Model {
