@@ -24,7 +24,6 @@ import (
 */
 
 var (
-	infoHeight int = 2
 	helpHeight int = 1
 	numberCols int = 3
 	margin     int = 3
@@ -43,8 +42,9 @@ type Model struct {
 	// Views
 	ProgramInfo Box
 	Url         textarea.Model
-	Response    textarea.Model
+	Response    Box
 	Help        help.Model
+	HttpMethod  textarea.Model
 
 	Requests textarea.Model
 	// History     relativeSizedView
@@ -52,26 +52,29 @@ type Model struct {
 	Headers textarea.Model
 	// Body        relativeSizedView
 	// Statistics  relativeSizedView
+	Requests   Box
+	Headers    Box
+	Body       textarea.Model
 }
 
 func initialModel() *Model {
 	model := Model{
 		IsDirectory: false,
 		Location:    ".",
-		Response:    newTextarea(),
-		ProgramInfo: NewBox(),
+		Response:    NewBoxWithHeight(6),
+		ProgramInfo: NewBoxWithHeight(infoHeight),
 		Url:         newTextarea(),
-		Requests:    newTextarea(),
-		Headers:     newTextarea(),
-		// HttpMethod:  newTextarea(),
-		Help: help.New(),
+		Requests:    NewBoxWithHeight(6),
+		Headers:     NewBoxWithHeight(6),
+		HttpMethod:  newTextarea(),
+		Help:        help.New(),
 	}
+
+	model.ProgramInfo.SetMaxWidth(25)
+	model.Requests.SetMaxWidth(25)
+
 	model.Url.Focus()
 	return &model
-}
-
-func newBox() Box {
-	return NewBox()
 }
 
 func newTextarea() textarea.Model {
@@ -104,8 +107,12 @@ func (m *Model) View() string {
 		m.Requests.View(),
 	)
 
+	requestMiddle := lipgloss.JoinHorizontal(lipgloss.Top,
+		m.HttpMethod.View(),
+		m.Url.View())
+
 	vertMiddle := lipgloss.JoinVertical(lipgloss.Left,
-		m.Url.View(),
+		requestMiddle,
 		m.Headers.View(),
 	)
 
@@ -115,7 +122,7 @@ func (m *Model) View() string {
 		vertMiddle,
 		m.Response.View(),
 	)
-	return horizontalViews + "\n\n" + "help ?"
+	return horizontalViews + "\n" + "help ?"
 }
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -127,18 +134,22 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.ProgramInfo.SetHeight(infoHeight)
 		m.Requests.SetHeight(msg.Height - helpHeight - infoHeight - 6)
 
+		m.HttpMethod.SetHeight(infoHeight)
 		m.Url.SetHeight(infoHeight)
+
 		m.Headers.SetHeight(msg.Height - helpHeight - infoHeight - 6)
 
 		m.Response.SetHeight(msg.Height - helpHeight - 4)
 
-		m.ProgramInfo.SetWidth(msg.Width / numberCols)
-		m.Requests.SetWidth(msg.Width / numberCols)
+		m.ProgramInfo.SetWidth(msg.Width/2 - 2)
+		m.Requests.SetWidth(msg.Width/2 - 2)
+		leftSideWidth := m.ProgramInfo.GetWidth()
 
-		m.Url.SetWidth(msg.Width / numberCols)
-		m.Headers.SetWidth(msg.Width / numberCols)
+		m.HttpMethod.SetWidth(5)
+		m.Url.SetWidth((msg.Width-leftSideWidth)/2 - 5 - 5)
 
-		m.Response.SetWidth(msg.Width / numberCols)
+		m.Headers.SetWidth((msg.Width-leftSideWidth)/2 - 3)
+		m.Response.SetWidth((msg.Width-leftSideWidth)/2 - 3)
 
 	case tea.KeyMsg:
 		switch {

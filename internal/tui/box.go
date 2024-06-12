@@ -10,16 +10,29 @@ import (
 )
 
 type Box struct {
-	width, height int
-	text          string
-	style         lipgloss.Style
+	width, height       int
+	maxWidth, maxHeight int
+	text                string
+	style               lipgloss.Style
 }
 
 func NewBox() Box {
 	return Box{
-		width: 5, height: 3,
-		text:  "coming soon",
-		style: focusedPlaceholderStyle,
+		maxWidth:  -1,
+		maxHeight: -1,
+		text:      "coming soon",
+		style:     blurredBorderStyle,
+	}
+}
+
+func NewBoxWithHeight(height int) Box {
+	return Box{
+		maxWidth:  -1,
+		maxHeight: -1,
+		width:     2,
+		height:    2,
+		text:      "coming soon",
+		style:     blurredBorderStyle,
 	}
 }
 
@@ -38,7 +51,7 @@ func (b *Box) visableLines() string {
 		startEmpty = 2
 		s := strings.Split(b.text, " ")
 		firstLine := fmt.Sprintf("%[1]*s", -b.width, fmt.Sprintf("%[1]*s", (b.width+len(s[0]))/2, s[0]))
-		secondLine := fmt.Sprintf("%[1]*s", -b.width, fmt.Sprintf("%[1]*s", (b.width+len(s[0]))/2, s[0]))
+		secondLine := fmt.Sprintf("%[1]*s", -b.width, fmt.Sprintf("%[1]*s", (b.width+len(s[1]))/2, s[1]))
 		lines[0] = firstLine
 		lines[1] = secondLine
 	}
@@ -50,12 +63,38 @@ func (b *Box) visableLines() string {
 	return strings.Join(lines, "\n")
 }
 
+func (b *Box) SetMaxWidth(width int) {
+	b.maxWidth = width
+}
+
 func (b *Box) SetWidth(width int) {
-	b.width = width
+	if b.maxWidth <= 0 {
+		b.width = width
+		return
+	}
+	if width < b.maxWidth {
+	} else {
+		b.width = b.maxWidth
+	}
+}
+
+func (b Box) GetWidth() int {
+	return b.width
+}
+
+func (b *Box) SetMaxHeight(height int) {
+	b.maxHeight = height
 }
 
 func (b *Box) SetHeight(height int) {
-	b.height = height
+	if b.maxHeight <= 0 {
+		b.height = height
+		return
+	}
+	if height < b.maxHeight {
+	} else {
+		b.height = b.maxHeight
+	}
 }
 
 func (b *Box) SetStyle(style lipgloss.Style) {
@@ -69,6 +108,9 @@ func (b Box) Init() tea.Cmd {
 func (b Box) View() string {
 	w := min(b.width, b.style.GetWidth())
 	h := min(b.height, b.style.GetHeight())
+
+	w -= b.style.GetBorderStyle().GetLeftSize()
+	w -= b.style.GetBorderStyle().GetRightSize()
 
 	contents := lipgloss.NewStyle().
 		Width(w).     // pad to width.
