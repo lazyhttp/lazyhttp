@@ -20,15 +20,6 @@ func NewBox() Box {
 	return Box{
 		maxWidth:  -1,
 		maxHeight: -1,
-		text:      "coming soon",
-		style:     blurredBorderStyle,
-	}
-}
-
-func NewBoxWithHeight(height int) Box {
-	return Box{
-		maxWidth:  -1,
-		maxHeight: -1,
 		width:     2,
 		height:    2,
 		text:      "coming soon",
