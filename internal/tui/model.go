@@ -42,31 +42,32 @@ type Model struct {
 
 	// Views
 	ProgramInfo Box
-	Url         textarea.Model
-	Response    Box
-	Help        help.Model
-	HttpMethod  textarea.Model
+	Requests    Box
+	History     Box
 
-	Requests   Box
-	History    Box
-	Headers    Box
+	HttpMethod Box
+	Url        textarea.Model
+	Headers    HeaderTable
 	Body       textarea.Model
-	Statistics Box
+
+	Response Box
+
+	Help help.Model
 }
 
 func initialModel() *Model {
 	model := Model{
 		IsDirectory: false,
 		Location:    ".",
-		Response:    NewBox(),
-		ProgramInfo: NewBox(),
-		Url:         newTextarea(),
-		Requests:    NewBox(),
-		Headers:     NewBox(),
-		HttpMethod:  newTextarea(),
-		Body:        newTextarea(),
+		Response:    NewBox("coming soon"),
+		ProgramInfo: NewBox("coming soon"),
+		Url:         NewTextarea(),
+		Requests:    NewBox("coming soon"),
+		Headers:     NewHeaderTable(),
+		HttpMethod:  NewBox("DELETE"),
+		Body:        NewTextarea(),
 
-		History: NewBox(),
+		History: NewBox("coming soon"),
 		Help:    help.New(),
 	}
 
@@ -76,26 +77,6 @@ func initialModel() *Model {
 
 	model.Url.Focus()
 	return &model
-}
-
-func newTextarea() textarea.Model {
-	t := textarea.New()
-	t.Prompt = ""
-	t.Placeholder = "Type something"
-	t.ShowLineNumbers = true
-	t.Cursor.Style = cursorStyle
-	t.FocusedStyle.Placeholder = focusedPlaceholderStyle
-	t.BlurredStyle.Placeholder = placeholderStyle
-	t.FocusedStyle.CursorLine = cursorLineStyle
-	t.FocusedStyle.Base = focusedBorderStyle
-	t.BlurredStyle.Base = blurredBorderStyle
-	t.FocusedStyle.EndOfBuffer = endOfBufferStyle
-	t.BlurredStyle.EndOfBuffer = endOfBufferStyle
-	t.KeyMap.DeleteWordBackward.SetEnabled(false)
-	t.KeyMap.LineNext = key.NewBinding(key.WithKeys("down"))
-	t.KeyMap.LinePrevious = key.NewBinding(key.WithKeys("up"))
-	t.Blur()
-	return t
 }
 
 func (m *Model) Init() tea.Cmd {
@@ -142,7 +123,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.HttpMethod.SetHeight(infoHeight)
 		m.Url.SetHeight(infoHeight)
 
-		m.Headers.SetHeight(leftHeight/2 - 4)
+		m.Headers.SetHeight(leftHeight/2 - 2)
 		m.Body.SetHeight(leftHeight/2 - 4)
 
 		m.Response.SetHeight(msg.Height - helpHeight - 4)
@@ -152,11 +133,13 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.History.SetWidth(msg.Width/2 - 2)
 		leftSideWidth := m.ProgramInfo.GetWidth()
 
-		m.HttpMethod.SetWidth(5)
-		m.Url.SetWidth((msg.Width-leftSideWidth)/2 - 5 - 5)
+		methodWidth := 10
+		m.HttpMethod.SetWidth(methodWidth)
+		m.Url.SetWidth((msg.Width-leftSideWidth)/2 - methodWidth - 5)
 
-		m.Headers.SetWidth((msg.Width-leftSideWidth)/2 - 3)
+		m.Headers.SetWidth((msg.Width-leftSideWidth)/2 - 1)
 		m.Body.SetWidth((msg.Width-leftSideWidth)/2 - 3)
+
 		m.Response.SetWidth((msg.Width-leftSideWidth)/2 - 3)
 
 	case tea.KeyMsg:

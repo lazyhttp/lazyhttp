@@ -16,13 +16,13 @@ type Box struct {
 	style               lipgloss.Style
 }
 
-func NewBox() Box {
+func NewBox(placeholder string) Box {
 	return Box{
 		maxWidth:  -1,
 		maxHeight: -1,
 		width:     2,
 		height:    2,
-		text:      "coming soon",
+		text:      placeholder,
 		style:     blurredBorderStyle,
 	}
 }
@@ -38,7 +38,7 @@ func (b *Box) visableLines() string {
 		lines[0] = firstLine
 
 	}
-	if diff < 0 {
+	if diff < 0 && strings.Contains(b.text, " ") {
 		startEmpty = 2
 		s := strings.Split(b.text, " ")
 		firstLine := fmt.Sprintf("%[1]*s", -b.width, fmt.Sprintf("%[1]*s", (b.width+len(s[0]))/2, s[0]))
