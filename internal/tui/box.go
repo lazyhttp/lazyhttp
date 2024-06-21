@@ -12,7 +12,7 @@ import (
 type Box struct {
 	width, height       int
 	maxWidth, maxHeight int
-	text                string
+	title               string
 	style               lipgloss.Style
 }
 
@@ -22,31 +22,14 @@ func NewBox(placeholder string) Box {
 		maxHeight: -1,
 		width:     2,
 		height:    2,
-		text:      placeholder,
+		title:     placeholder,
 		style:     blurredBorderStyle,
 	}
 }
 
-func (b *Box) visableLines() string {
-	diff := b.width - len(b.text)
-
+func (b *Box) getEmptyLines() string {
 	lines := make([]string, b.height)
 	startEmpty := 0
-	if diff > 2 {
-		startEmpty = 1
-		firstLine := fmt.Sprintf("%[1]*s", -b.width, fmt.Sprintf("%[1]*s", (b.width+len(b.text))/2, b.text))
-		lines[0] = firstLine
-
-	}
-	if diff < 0 && strings.Contains(b.text, " ") {
-		startEmpty = 2
-		s := strings.Split(b.text, " ")
-		firstLine := fmt.Sprintf("%[1]*s", -b.width, fmt.Sprintf("%[1]*s", (b.width+len(s[0]))/2, s[0]))
-		secondLine := fmt.Sprintf("%[1]*s", -b.width, fmt.Sprintf("%[1]*s", (b.width+len(s[1]))/2, s[1]))
-		lines[0] = firstLine
-		lines[1] = secondLine
-	}
-
 	for i := startEmpty; i < b.height; i++ {
 		lines[i] = strings.Repeat(" ", b.width)
 	}
@@ -108,11 +91,35 @@ func (b Box) View() string {
 		Height(h).    // pad to height.
 		MaxHeight(h). // truncate height if taller.
 		MaxWidth(w).  // truncate width if wider.
-		Render(b.visableLines())
+		Render(b.getEmptyLines())
 
-	return b.style.
+	style := b.style
+	// topLeft := style.GetBorderStyle().TopLeft
+	// topRight := style.GetBorderStyle().TopRight
+	// top := style.GetBorderStyle().Top
+	style = style.UnsetBorderTop()
+
+	title := b.title
+	if b.width <= 2 {
+		title = "h"
+	} else if len(title) >= w-2 {
+		title = title[0 : w-2]
+	}
+
+	repeatedMiddleChar := w - 2 - len(title)
+	if repeatedMiddleChar < 0 {
+		repeatedMiddleChar = 0
+	}
+
+	topLine := strings.Builder{}
+	topLine.WriteString(" ")
+	topLine.WriteString(fmt.Sprintf(" %v", title))
+	topLine.WriteString(strings.Repeat(" ", repeatedMiddleChar))
+	topLine.WriteString(" ")
+
+	return style.
 		UnsetWidth().UnsetHeight(). // Style size already applied in contents.
-		Render(contents)
+		Render(fmt.Sprintf("%v\n%v", topLine.String(), contents))
 }
 
 func (b Box) Update(msg tea.Msg) (Box, tea.Cmd) {

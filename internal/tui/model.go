@@ -10,7 +10,7 @@ import (
 
 /*
 ---------------------------------------------------------
-|Info	|Method		|Url			|Response			|
+|Info	|Url            			|Response			|
 |-----------------------------------|					|
 |Reqs	|Headers					|					|
 |		|							|					|
@@ -45,10 +45,9 @@ type Model struct {
 	Requests    Box
 	History     Box
 
-	HttpMethod Box
-	Url        textarea.Model
-	Headers    HeaderTable
-	Body       textarea.Model
+	Url     textarea.Model
+	Headers HeaderTable
+	Body    textarea.Model
 
 	Response Box
 
@@ -59,15 +58,14 @@ func initialModel() *Model {
 	model := Model{
 		IsDirectory: false,
 		Location:    ".",
-		Response:    NewBox("coming soon"),
-		ProgramInfo: NewBox("coming soon"),
+		Response:    NewBox("help"),
+		ProgramInfo: NewBox("help"),
 		Url:         NewTextarea(),
-		Requests:    NewBox("coming soon"),
+		Requests:    NewBox("help"),
 		Headers:     NewHeaderTable(),
-		HttpMethod:  NewBox("DELETE"),
 		Body:        NewTextarea(),
 
-		History: NewBox("coming soon"),
+		History: NewBox("help"),
 		Help:    help.New(),
 	}
 
@@ -90,12 +88,8 @@ func (m *Model) View() string {
 		m.History.View(),
 	)
 
-	requestMiddle := lipgloss.JoinHorizontal(lipgloss.Top,
-		m.HttpMethod.View(),
-		m.Url.View())
-
 	vertMiddle := lipgloss.JoinVertical(lipgloss.Left,
-		requestMiddle,
+		m.Url.View(),
 		m.Headers.View(),
 		m.Body.View(),
 	)
@@ -120,7 +114,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.Requests.SetHeight(leftHeight/2 - 4)
 		m.History.SetHeight(leftHeight/2 - 4)
 
-		m.HttpMethod.SetHeight(infoHeight)
 		m.Url.SetHeight(infoHeight)
 
 		m.Headers.SetHeight(leftHeight/2 - 2)
@@ -133,9 +126,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.History.SetWidth(msg.Width/2 - 2)
 		leftSideWidth := m.ProgramInfo.GetWidth()
 
-		methodWidth := 10
-		m.HttpMethod.SetWidth(methodWidth)
-		m.Url.SetWidth((msg.Width-leftSideWidth)/2 - methodWidth - 5)
+		m.Url.SetWidth((msg.Width-leftSideWidth)/2 - 3)
 
 		m.Headers.SetWidth((msg.Width-leftSideWidth)/2 - 1)
 		m.Body.SetWidth((msg.Width-leftSideWidth)/2 - 3)
@@ -150,14 +141,14 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	var cmds []tea.Cmd
-	newPI, cmdi := m.ProgramInfo.Update(msg)
-	newUrl, cmdu := m.Url.Update(msg)
-	newRes, cmdr := m.Response.Update(msg)
-
-	m.ProgramInfo = newPI
-	m.Url = newUrl
-	m.Response = newRes
-	cmds = append(cmds, cmdi, cmdu, cmdr)
+	// newPI, cmdi := m.ProgramInfo.Update(msg)
+	// newUrl, cmdu := m.Url.Update(msg)
+	// newRes, cmdr := m.Response.Update(msg)
+	//
+	// m.ProgramInfo = newPI
+	// m.Url = newUrl
+	// m.Response = newRes
+	// cmds = append(cmds, cmdi, cmdu, cmdr)
 
 	return m, tea.Batch(cmds...)
 }
