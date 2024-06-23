@@ -30,7 +30,7 @@ var (
 	margin     int = 3
 )
 
-type Model struct {
+type Tui struct {
 	// flags
 	IsDirectory bool
 
@@ -45,17 +45,17 @@ type Model struct {
 	Requests    Box
 	History     Box
 
-	Url     textarea.Model
+	Url     TextInput
 	Headers HeaderTable
-	Body    textarea.Model
+	Body    TextInput
 
 	Response Box
 
 	Help help.Model
 }
 
-func initialModel() *Model {
-	model := Model{
+func initialModel() *Tui {
+	model := Tui{
 		IsDirectory: false,
 		Location:    ".",
 		Response:    NewBox("help"),
@@ -73,15 +73,15 @@ func initialModel() *Model {
 	model.Requests.SetMaxWidth(25)
 	model.History.SetMaxWidth(25)
 
-	model.Url.Focus()
+	model.Body.Focus()
 	return &model
 }
 
-func (m *Model) Init() tea.Cmd {
+func (m *Tui) Init() tea.Cmd {
 	return textarea.Blink
 }
 
-func (m *Model) View() string {
+func (m *Tui) View() string {
 	vertLeft := lipgloss.JoinVertical(lipgloss.Left,
 		m.ProgramInfo.View(),
 		m.Requests.View(),
@@ -103,7 +103,7 @@ func (m *Model) View() string {
 	return horizontalViews + "\n" + blurredBorderStyle.Render("help ?")
 }
 
-func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *Tui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.Height = msg.Height
@@ -112,12 +112,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.ProgramInfo.SetHeight(infoHeight)
 		leftHeight := msg.Height - helpHeight - infoHeight
 		m.Requests.SetHeight(leftHeight/2 - 4)
-		m.History.SetHeight(leftHeight/2 - 4)
+		m.History.SetHeight(leftHeight/2 - 3)
 
 		m.Url.SetHeight(infoHeight)
 
 		m.Headers.SetHeight(leftHeight/2 - 2)
-		m.Body.SetHeight(leftHeight/2 - 4)
+		m.Body.SetHeight(leftHeight/2 - 3)
 
 		m.Response.SetHeight(msg.Height - helpHeight - 4)
 
